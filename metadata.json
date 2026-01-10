@@ -1,0 +1,5 @@
+{
+  "name": "SpellSpider",
+  "description": "A web crawler that scans websites for spelling and grammatical errors using Gemini AI.",
+  "requestFramePermissions": []
+}

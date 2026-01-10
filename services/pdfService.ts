@@ -1,0 +1,506 @@
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { PageScanResult, SpellingError } from "../types";
+
+// Extend jsPDF type to include autoTable
+interface jsPDFWithAutoTable extends jsPDF {
+  autoTable: typeof autoTable;
+  lastAutoTable: { finalY: number };
+}
+
+// Color scheme for professional audit report (RGB tuple format for jsPDF)
+const COLORS = {
+  primary: [37, 99, 235] as [number, number, number], // Blue #2563eb
+  secondary: [100, 116, 139] as [number, number, number], // Slate #64748b
+  success: [16, 185, 129] as [number, number, number], // Green #10b981
+  warning: [245, 158, 11] as [number, number, number], // Amber #f59e0b
+  danger: [239, 68, 68] as [number, number, number], // Red #ef4444
+  text: [30, 41, 59] as [number, number, number], // Dark slate #1e293b
+  lightGray: [241, 245, 249] as [number, number, number], // Light background #f1f5f9
+  white: [255, 255, 255] as [number, number, number], // #ffffff
+  border: [226, 232, 240] as [number, number, number], // #e2e8f0
+};
+
+// Severity colors (RGB tuple format for jsPDF)
+const SEVERITY_COLORS = {
+  High: [239, 68, 68] as [number, number, number], // Red
+  Medium: [245, 158, 11] as [number, number, number], // Amber
+  Low: [148, 163, 184] as [number, number, number], // Gray
+};
+
+export const generatePDFReport = (
+  results: PageScanResult[],
+  targetUrl: string
+): void => {
+  const doc = new jsPDF() as jsPDFWithAutoTable;
+  const pageWidth = doc.internal.pageSize.width;
+  const pageHeight = doc.internal.pageSize.height;
+  const margin = 20;
+  let yPos = margin;
+
+  // Calculate statistics
+  const totalPages = results.filter((r) => r.status === "completed").length;
+  const totalErrors = results.reduce((acc, r) => acc + r.errors.length, 0);
+  const avgScore =
+    totalPages > 0
+      ? Math.round(
+          results.reduce((acc, r) => acc + (r.score || 0), 0) / totalPages
+        )
+      : 0;
+  const errorsBySeverity = {
+    High: 0,
+    Medium: 0,
+    Low: 0,
+  };
+  results.forEach((r) => {
+    r.errors.forEach((err) => {
+      errorsBySeverity[err.severity]++;
+    });
+  });
+
+  // ===== COVER PAGE =====
+  // Header Background
+  doc.setFillColor(...COLORS.primary);
+  doc.rect(0, 0, pageWidth, 60, "F");
+
+  // Logo/Title Area
+  doc.setTextColor(...COLORS.white);
+  doc.setFontSize(32);
+  doc.setFont("helvetica", "bold");
+  doc.text("SpellSpider", margin, 30);
+
+  doc.setFontSize(16);
+  doc.setFont("helvetica", "normal");
+  doc.text("Content Audit Report", margin, 45);
+
+  // Report Details Box
+  yPos = 80;
+  doc.setFillColor(...COLORS.lightGray);
+  doc.roundedRect(margin, yPos, pageWidth - 2 * margin, 50, 3, 3, "F");
+
+  doc.setTextColor(...COLORS.text);
+  doc.setFontSize(11);
+  doc.setFont("helvetica", "bold");
+  doc.text("Report Details", margin + 10, yPos + 12);
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.text(`Target: ${targetUrl}`, margin + 10, yPos + 22);
+  doc.text(
+    `Date: ${new Date().toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    })}`,
+    margin + 10,
+    yPos + 32
+  );
+  doc.text(`Pages Analyzed: ${totalPages}`, margin + 10, yPos + 42);
+
+  // Executive Summary Box
+  yPos = 145;
+  doc.setFillColor(...COLORS.white);
+  doc.setDrawColor(...COLORS.border);
+  doc.roundedRect(margin, yPos, pageWidth - 2 * margin, 70, 3, 3, "FD");
+
+  doc.setFontSize(14);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...COLORS.primary);
+  doc.text("Executive Summary", margin + 10, yPos + 15);
+
+  // Summary Stats
+  const statY = yPos + 30;
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...COLORS.text);
+
+  // Average Score with color coding
+  const scoreColor =
+    avgScore >= 80
+      ? COLORS.success
+      : avgScore >= 60
+      ? COLORS.warning
+      : COLORS.danger;
+  doc.text("Average Quality Score:", margin + 10, statY);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(16);
+  doc.setTextColor(...scoreColor);
+  doc.text(`${avgScore}/100`, margin + 60, statY);
+
+  // Error counts
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...COLORS.text);
+  doc.text("Total Issues Found:", margin + 10, statY + 12);
+  doc.setFont("helvetica", "bold");
+  doc.text(`${totalErrors}`, margin + 60, statY + 12);
+
+  // Severity breakdown
+  doc.setFont("helvetica", "normal");
+  const sevY = statY + 24;
+  doc.setTextColor(...SEVERITY_COLORS.High);
+  doc.text(`● High: ${errorsBySeverity.High}`, margin + 10, sevY);
+  doc.setTextColor(...SEVERITY_COLORS.Medium);
+  doc.text(`● Medium: ${errorsBySeverity.Medium}`, margin + 45, sevY);
+  doc.setTextColor(...SEVERITY_COLORS.Low);
+  doc.text(`● Low: ${errorsBySeverity.Low}`, margin + 85, sevY);
+
+  // Footer
+  doc.setFontSize(8);
+  doc.setTextColor(...COLORS.secondary);
+  doc.setFont("helvetica", "italic");
+  doc.text(
+    "Generated by SpellSpider - Professional Content Auditing Tool",
+    pageWidth / 2,
+    pageHeight - 15,
+    { align: "center" }
+  );
+
+  // ===== TABLE OF CONTENTS =====
+  doc.addPage();
+  yPos = margin;
+
+  doc.setFontSize(20);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...COLORS.primary);
+  doc.text("Table of Contents", margin, yPos);
+
+  yPos += 15;
+  doc.setDrawColor(...COLORS.primary);
+  doc.setLineWidth(0.5);
+  doc.line(margin, yPos, pageWidth - margin, yPos);
+  yPos += 10;
+
+  // TOC Entries
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...COLORS.text);
+
+  const tocEntries: Array<{ title: string; page: number }> = [
+    { title: "Executive Summary", page: 1 },
+    { title: "Detailed Findings", page: 3 },
+  ];
+
+  results.forEach((result, idx) => {
+    if (result.status === "completed") {
+      tocEntries.push({
+        title: `  ${idx + 1}. ${result.title}`,
+        page: 3 + idx,
+      });
+    }
+  });
+
+  tocEntries.forEach((entry) => {
+    if (yPos > pageHeight - 30) {
+      doc.addPage();
+      yPos = margin;
+    }
+
+    const isSection = !entry.title.startsWith("  ");
+    if (isSection) {
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(...COLORS.primary);
+    } else {
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(...COLORS.text);
+    }
+
+    doc.text(entry.title, margin + 5, yPos);
+
+    // Page number with dots
+    const dotsWidth = 4;
+    const pageNumText = `${entry.page}`;
+    const pageNumWidth = doc.getTextWidth(pageNumText);
+    const textWidth = doc.getTextWidth(entry.title);
+    const availableWidth =
+      pageWidth - margin * 2 - textWidth - pageNumWidth - 10;
+    const numDots = Math.floor(availableWidth / dotsWidth);
+
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(...COLORS.secondary);
+    const dots = ".".repeat(Math.max(0, numDots));
+    doc.text(dots, margin + 5 + textWidth + 5, yPos);
+    doc.text(pageNumText, pageWidth - margin - pageNumWidth, yPos);
+
+    yPos += isSection ? 10 : 7;
+  });
+
+  // ===== DETAILED FINDINGS =====
+  let pageNumber = 3;
+
+  results.forEach((result, index) => {
+    if (result.status !== "completed") return;
+
+    doc.addPage();
+    yPos = margin;
+
+    // Page Header with page number
+    doc.setFillColor(...COLORS.primary);
+    doc.rect(0, 0, pageWidth, 15, "F");
+    doc.setFontSize(9);
+    doc.setTextColor(...COLORS.white);
+    doc.setFont("helvetica", "bold");
+    doc.text(`Page ${pageNumber}`, pageWidth - margin, 10, { align: "right" });
+    pageNumber++;
+
+    yPos = 25;
+
+    // Page Title
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...COLORS.primary);
+    const titleText = doc.splitTextToSize(result.title, pageWidth - 2 * margin);
+    doc.text(titleText, margin, yPos);
+    yPos += titleText.length * 7 + 5;
+
+    // Page URL (if applicable)
+    if (result.url !== "manual-text") {
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(...COLORS.secondary);
+      doc.textWithLink("🔗 " + result.url, margin, yPos, { url: result.url });
+      yPos += 8;
+    }
+
+    // Divider
+    doc.setDrawColor(...COLORS.border);
+    doc.line(margin, yPos, pageWidth - margin, yPos);
+    yPos += 10;
+
+    // Score Badge
+    const score = result.score || 0;
+    const scoreColor =
+      score >= 80
+        ? COLORS.success
+        : score >= 60
+        ? COLORS.warning
+        : COLORS.danger;
+    const scoreLabel =
+      score >= 80 ? "Excellent" : score >= 60 ? "Good" : "Needs Work";
+
+    doc.setFillColor(...scoreColor);
+    doc.roundedRect(margin, yPos, 40, 12, 2, 2, "F");
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...COLORS.white);
+    doc.text(`${score}/100`, margin + 20, yPos + 8, { align: "center" });
+
+    doc.setFontSize(9);
+    doc.setTextColor(...COLORS.text);
+    doc.setFont("helvetica", "italic");
+    doc.text(scoreLabel, margin + 45, yPos + 8);
+
+    yPos += 20;
+
+    // Summary Section
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...COLORS.text);
+    doc.text("Editorial Summary:", margin, yPos);
+    yPos += 7;
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    const summaryLines = doc.splitTextToSize(
+      result.summary || "No summary available.",
+      pageWidth - 2 * margin
+    );
+    doc.text(summaryLines, margin, yPos);
+    yPos += summaryLines.length * 5 + 10;
+
+    // Statistics
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(...COLORS.secondary);
+    doc.text(
+      `Word Count: ${result.wordCount} | Issues Found: ${
+        result.errors.length
+      } | Scanned: ${new Date(result.scannedAt).toLocaleString()}`,
+      margin,
+      yPos
+    );
+    yPos += 10;
+
+    // Issues Table
+    if (result.errors.length === 0) {
+      doc.setFillColor(...COLORS.success);
+      doc.setDrawColor(...COLORS.success);
+      doc.roundedRect(margin, yPos, pageWidth - 2 * margin, 12, 2, 2, "FD");
+      doc.setFontSize(10);
+      doc.setTextColor(...COLORS.white);
+      doc.setFont("helvetica", "bold");
+      doc.text(
+        "✓ No issues found - Content is excellent!",
+        margin + 10,
+        yPos + 8
+      );
+    } else {
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(...COLORS.primary);
+      doc.text(`Issues Detected (${result.errors.length})`, margin, yPos);
+      yPos += 8;
+
+      // Group errors by severity
+      const groupedErrors = {
+        High: result.errors.filter((e) => e.severity === "High"),
+        Medium: result.errors.filter((e) => e.severity === "Medium"),
+        Low: result.errors.filter((e) => e.severity === "Low"),
+      };
+
+      // Generate table data
+      const tableData: any[] = [];
+
+      Object.entries(groupedErrors).forEach(([severity, errors]) => {
+        if (errors.length > 0) {
+          errors.forEach((err, errIdx) => {
+            tableData.push([
+              errIdx === 0 ? severity : "", // Only show severity on first error of group
+              err.type,
+              err.original.substring(0, 60) +
+                (err.original.length > 60 ? "..." : ""),
+              err.suggestion.substring(0, 60) +
+                (err.suggestion.length > 60 ? "..." : ""),
+              err.explanation || "",
+            ]);
+          });
+        }
+      });
+
+      if (tableData.length > 0) {
+        autoTable(doc, {
+          startY: yPos,
+          head: [
+            ["Severity", "Type", "Original Text", "Suggestion", "Explanation"],
+          ],
+          body: tableData,
+          theme: "striped",
+          headStyles: {
+            fillColor: COLORS.primary,
+            textColor: COLORS.white,
+            fontStyle: "bold",
+            fontSize: 9,
+          },
+          bodyStyles: {
+            fontSize: 8,
+            textColor: COLORS.text,
+          },
+          alternateRowStyles: {
+            fillColor: COLORS.lightGray,
+          },
+          columnStyles: {
+            0: { cellWidth: 20, fontStyle: "bold" },
+            1: { cellWidth: 22 },
+            2: { cellWidth: 45 },
+            3: { cellWidth: 45 },
+            4: { cellWidth: "auto" },
+          },
+          margin: { left: margin, right: margin },
+          didParseCell: (data) => {
+            if (data.column.index === 0 && data.cell.text.length > 0) {
+              const severity = data.cell.text[0] as "High" | "Medium" | "Low";
+              data.cell.styles.textColor = SEVERITY_COLORS[severity];
+              data.cell.styles.fontStyle = "bold";
+            }
+          },
+        });
+      }
+    }
+
+    // Footer with page info
+    const footerY = pageHeight - 10;
+    doc.setFontSize(7);
+    doc.setTextColor(...COLORS.secondary);
+    doc.setFont("helvetica", "italic");
+    doc.text(
+      `Report generated on ${new Date().toLocaleDateString()}`,
+      pageWidth / 2,
+      footerY,
+      { align: "center" }
+    );
+  });
+
+  // ===== FINAL PAGE - RECOMMENDATIONS =====
+  doc.addPage();
+  yPos = margin;
+
+  doc.setFillColor(...COLORS.primary);
+  doc.rect(0, 0, pageWidth, 15, "F");
+  doc.setFontSize(9);
+  doc.setTextColor(...COLORS.white);
+  doc.setFont("helvetica", "bold");
+  doc.text(`Page ${pageNumber}`, pageWidth - margin, 10, { align: "right" });
+
+  yPos = 25;
+  doc.setFontSize(18);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...COLORS.primary);
+  doc.text("Recommendations", margin, yPos);
+  yPos += 15;
+
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...COLORS.text);
+
+  const recommendations = [
+    {
+      title: "Prioritize High-Severity Issues",
+      text: `Address all ${errorsBySeverity.High} high-severity issues first, as they significantly impact content quality and user trust.`,
+    },
+    {
+      title: "Review Medium-Severity Issues",
+      text: `The ${errorsBySeverity.Medium} medium-severity issues should be addressed to improve clarity and professionalism.`,
+    },
+    {
+      title: "Content Quality Standards",
+      text: "Establish editorial guidelines to maintain consistency across all pages and prevent similar issues in the future.",
+    },
+    {
+      title: "Regular Audits",
+      text: "Schedule periodic content audits (monthly or quarterly) to maintain high quality standards and catch issues early.",
+    },
+  ];
+
+  recommendations.forEach((rec, idx) => {
+    if (yPos > pageHeight - 50) {
+      doc.addPage();
+      yPos = margin;
+    }
+
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...COLORS.primary);
+    doc.text(`${idx + 1}. ${rec.title}`, margin, yPos);
+    yPos += 7;
+
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(...COLORS.text);
+    const lines = doc.splitTextToSize(rec.text, pageWidth - 2 * margin - 5);
+    doc.text(lines, margin + 5, yPos);
+    yPos += lines.length * 5 + 10;
+  });
+
+  // Final footer
+  yPos = pageHeight - 30;
+  doc.setFillColor(...COLORS.lightGray);
+  doc.rect(0, yPos, pageWidth, 30, "F");
+  doc.setFontSize(9);
+  doc.setTextColor(...COLORS.text);
+  doc.setFont("helvetica", "bold");
+  doc.text("SpellSpider Content Audit", pageWidth / 2, yPos + 12, {
+    align: "center",
+  });
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.text(
+    "Professional content analysis powered by AI",
+    pageWidth / 2,
+    yPos + 20,
+    { align: "center" }
+  );
+
+  // Save PDF
+  const fileName = `SpellSpider-Audit-${
+    new Date().toISOString().split("T")[0]
+  }.pdf`;
+  doc.save(fileName);
+};
