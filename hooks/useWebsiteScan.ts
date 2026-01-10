@@ -21,6 +21,7 @@ export const useWebsiteScan = () => {
   >();
   const [isScanning, setIsScanning] = useState(false);
   const [errorDetails, setErrorDetails] = useState<string | null>(null);
+  const [discoveryProgress, setDiscoveryProgress] = useState<string>("");
 
   // Ref to track scanning status for the async loop without closure staleness
   const isScanningRef = React.useRef(false);
@@ -37,20 +38,25 @@ export const useWebsiteScan = () => {
     setStep("discovering");
     setErrorDetails(null);
     setDiscoveredPages([]);
+    setDiscoveryProgress("Starting discovery...");
 
     try {
-      const uniqueLinks = await discoverUrls(targetUrl);
+      const uniqueLinks = await discoverUrls(targetUrl, (message) => {
+        setDiscoveryProgress(message);
+      });
       if (uniqueLinks.length === 0) {
         throw new Error("No pages found.");
       }
       setDiscoveredPages(uniqueLinks);
       setSelectedPages(new Set(uniqueLinks));
+      setDiscoveryProgress("");
       setStep("selection");
     } catch (e) {
       console.error(e);
       setErrorDetails(
         "Could not access the website. It may be blocking automated scans."
       );
+      setDiscoveryProgress("");
       setStep("input");
     }
   }, [urlInput]);
@@ -184,6 +190,7 @@ export const useWebsiteScan = () => {
     isScanning,
     errorDetails,
     setErrorDetails,
+    discoveryProgress,
     handleDiscover,
     togglePageSelection,
     toggleSelectAll,

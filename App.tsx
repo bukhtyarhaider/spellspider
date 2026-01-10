@@ -154,16 +154,9 @@ function App() {
     if (!selectedResult || !("errors" in selectedResult)) return [];
     return selectedResult.errors.filter((error) => {
       // Filter by type
-      if (
-        filterType !== "All" &&
-        error.type !== filterType
-      )
-        return false;
+      if (filterType !== "All" && error.type !== filterType) return false;
       // Filter by severity
-      if (
-        filterSeverity !== "All" &&
-        error.severity !== filterSeverity
-      )
+      if (filterSeverity !== "All" && error.severity !== filterSeverity)
         return false;
       return true;
     });
@@ -185,8 +178,6 @@ function App() {
     name,
     value,
   }));
-
-
 
   // Handlers
   const handleReset = () => {
@@ -349,6 +340,25 @@ function App() {
                   step={step}
                 />
               </div>
+
+              {websiteScan.discoveryProgress && step === "discovering" && (
+                <Card className="animate-pulse border-indigo-200 dark:border-indigo-800 bg-indigo-50/50 dark:bg-indigo-950/20">
+                  <div className="flex items-center gap-3">
+                    <Loader2
+                      className="animate-spin text-indigo-600 dark:text-indigo-400"
+                      size={20}
+                    />
+                    <div>
+                      <p className="text-sm font-medium text-indigo-900 dark:text-indigo-100">
+                        Discovering pages...
+                      </p>
+                      <p className="text-xs text-indigo-600 dark:text-indigo-400 mt-1">
+                        {websiteScan.discoveryProgress}
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+              )}
 
               {websiteScan.errorDetails && (
                 <ErrorMessage message={websiteScan.errorDetails} />
@@ -859,7 +869,7 @@ function App() {
                       resolvedErrors={resolvedErrors}
                       onToggleError={toggleResolvedError}
                       onScrollToIssue={(id) =>
-                         handleScrollToElement(`error-card-${id}`)
+                        handleScrollToElement(`error-card-${id}`)
                       }
                       onRetest={handleRetest}
                       isScanning={isScanning}

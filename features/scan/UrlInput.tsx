@@ -48,8 +48,8 @@ export const UrlInput: React.FC<UrlInputProps> = ({
       {/* glow */}
       <div
         className={[
-          "absolute -inset-0.5 rounded-2xl blur transition duration-500",
-          "bg-gradient-to-r from-indigo-500 to-violet-600",
+          "absolute -inset-0.5 rounded-2xl blur transition duration-500 pointer-events-none",
+          "bg-linear-to-r from-indigo-500 to-violet-600",
           "opacity-0 dark:opacity-20",
           disabled ? "hidden" : "group-hover:opacity-30",
         ].join(" ")}
@@ -84,11 +84,23 @@ export const UrlInput: React.FC<UrlInputProps> = ({
       </div>
 
       {step === "discovering" ? (
-        <Button variant="primary" size="lg" loading disabled>
+        <Button
+          variant="primary"
+          size="lg"
+          loading
+          disabled
+          className="relative z-10"
+        >
           Scanning...
         </Button>
       ) : step === "selection" ? (
-        <Button variant="secondary" size="lg" onClick={onReset} disabled={disabled}>
+        <Button
+          variant="secondary"
+          size="lg"
+          onClick={onReset}
+          disabled={disabled}
+          className="relative z-10"
+        >
           Reset
         </Button>
       ) : (
@@ -98,7 +110,7 @@ export const UrlInput: React.FC<UrlInputProps> = ({
           onClick={onDiscover}
           disabled={isStartDisabled}
           icon={<ArrowRight size={20} />}
-          className={disabled ? "pointer-events-none" : undefined}
+          className={`relative z-10 ${disabled ? "pointer-events-none" : ""}`}
         >
           Start
         </Button>
