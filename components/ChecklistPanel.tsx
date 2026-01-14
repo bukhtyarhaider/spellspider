@@ -1,6 +1,12 @@
 import React, { useMemo } from "react";
-import { Card, Button } from "../components/ui";
-import { Check, RefreshCw, CheckCircle2, RotateCw, FileText } from "lucide-react";
+import { Card, Button, Progress, Badge } from "../components/ui";
+import {
+  Check,
+  RefreshCw,
+  CheckCircle2,
+  RotateCw,
+  FileText,
+} from "lucide-react";
 import { SpellingError, PageScanResult } from "../types";
 
 interface ChecklistPanelProps {
@@ -56,18 +62,18 @@ export const ChecklistPanel: React.FC<ChecklistPanelProps> = ({
             <CheckCircle2 className="text-emerald-500" size={18} />
             Fix Checklist
           </h3>
-          <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
-            {resolvedCount} / {totalErrors} Resolved
-          </span>
+          <Badge variant="success" size="sm">
+            {resolvedCount} / {totalErrors}
+          </Badge>
         </div>
 
         {/* Progress Bar */}
-        <div className="h-2 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-emerald-500 transition-all duration-500 ease-out"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
+        <Progress
+          value={progress}
+          variant="success"
+          size="sm"
+          className="w-full"
+        />
       </div>
 
       {/* Scrollable List */}

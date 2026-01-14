@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import {
   History,
   Calendar,
@@ -7,20 +8,18 @@ import {
   ArrowLeft,
   Globe,
   FileText,
-  AlertCircle,
-  CheckCircle,
   Clock,
   X,
   ExternalLink,
   AlertTriangle,
   Upload,
-  Download,
-  FileJson,
   ChevronDown,
   ChevronRight,
   Folder,
+  Download,
 } from "lucide-react";
 import { SavedReport } from "../../types";
+import { Badge, EmptyState, Button, Card } from "../../components/ui";
 
 interface HistoryPanelProps {
   isOpen: boolean;
@@ -59,7 +58,7 @@ const ConfirmationModal: React.FC<{
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4">
       <div
         className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
         onClick={onClose}
@@ -184,39 +183,35 @@ const HistoryItemCard: React.FC<{
 
         {/* Stats Pills */}
         <div className="flex items-center gap-2 mb-3">
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-700/50 text-xs font-medium text-slate-600 dark:text-slate-300">
-            <FileText size={12} />
+          <Badge variant="default" size="sm" icon={<FileText size={12} />}>
             {report.results.length}{" "}
             {report.results.length === 1 ? "page" : "pages"}
-          </span>
-          <span
-            className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium ${
-              hasErrors
-                ? "bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400"
-                : "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400"
-            }`}
-          >
-            {hasErrors ? <AlertCircle size={12} /> : <CheckCircle size={12} />}
+          </Badge>
+          <Badge variant={hasErrors ? "danger" : "success"} size="sm" dot>
             {report.totalErrors} {report.totalErrors === 1 ? "issue" : "issues"}
-          </span>
+          </Badge>
         </div>
 
         {/* Action Buttons */}
         <div className="flex items-center gap-2">
-          <button
+          <Button
             onClick={onView}
-            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700/50 hover:bg-slate-200 dark:hover:bg-slate-600/50 rounded-lg transition-colors"
+            variant="secondary"
+            size="sm"
+            icon={<Eye size={14} />}
+            className="flex-1"
           >
-            <Eye size={14} />
             Preview
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={onLoad}
-            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors shadow-sm shadow-indigo-500/20"
+            variant="primary"
+            size="sm"
+            icon={<ExternalLink size={14} />}
+            className="flex-1"
           >
-            <ExternalLink size={14} />
             Open
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -426,27 +421,25 @@ const HistoryDetailView: React.FC<{
                   </div>
                   <div className="flex items-center gap-1.5">
                     {page.score !== undefined && (
-                      <span
-                        className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                      <Badge
+                        variant={
                           page.score >= 80
-                            ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+                            ? "success"
                             : page.score >= 60
-                            ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
-                            : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                        }`}
+                            ? "warning"
+                            : "danger"
+                        }
+                        size="xs"
                       >
                         {page.score}%
-                      </span>
+                      </Badge>
                     )}
-                    <span
-                      className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${
-                        page.errors.length > 0
-                          ? "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400"
-                          : "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400"
-                      }`}
+                    <Badge
+                      variant={page.errors.length > 0 ? "danger" : "success"}
+                      size="xs"
                     >
                       {page.errors.length}
-                    </span>
+                    </Badge>
                   </div>
                 </div>
               ))}
@@ -456,20 +449,22 @@ const HistoryDetailView: React.FC<{
 
         {/* Footer Actions */}
         <div className="p-4 border-t border-slate-200 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-800/30 flex items-center gap-2">
-          <button
+          <Button
             onClick={() => setShowDeleteConfirm(true)}
-            className="p-2.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+            variant="danger"
+            size="sm"
+            icon={<Trash2 size={18} />}
             title="Delete report"
-          >
-            <Trash2 size={18} />
-          </button>
-          <button
+          />
+          <Button
             onClick={onLoad}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors shadow-sm shadow-indigo-500/20"
+            variant="primary"
+            size="md"
+            icon={<ExternalLink size={16} />}
+            className="flex-1"
           >
-            <ExternalLink size={16} />
             Open in Workspace
-          </button>
+          </Button>
         </div>
       </div>
     </>
@@ -555,7 +550,7 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({
 
   if (!isOpen) return null;
 
-  return (
+  const panel = (
     <>
       {/* Delete Single Item Confirmation */}
       <ConfirmationModal
@@ -580,12 +575,12 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({
 
       {/* Panel Backdrop */}
       <div
-        className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[9998]"
+        className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[9999]"
         onClick={onClose}
       />
 
       {/* Panel */}
-      <div className="fixed top-0 right-0 bottom-0 w-full max-w-md bg-white dark:bg-slate-900 shadow-2xl z-[9998] flex flex-col animate-slide-in-right">
+      <div className="fixed top-0 right-0 bottom-0 w-full max-w-md bg-white dark:bg-slate-900 shadow-2xl z-[10000] flex flex-col animate-slide-in-right">
         {selectedItem ? (
           <HistoryDetailView
             report={selectedItem}
@@ -657,23 +652,18 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({
             {/* Content */}
             <div className="flex-1 overflow-y-auto p-4">
               {history.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-center">
-                  <div className="w-14 h-14 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mb-4">
-                    <History
-                      size={28}
-                      className="text-slate-300 dark:text-slate-600"
-                    />
-                  </div>
-                  <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    No History Yet
-                  </h3>
-                  <p className="text-xs text-slate-400 max-w-[180px]">
-                    Scan results will appear here automatically
-                  </p>
+                <div className="flex items-center justify-center h-full">
+                  <EmptyState
+                    icon={History}
+                    title="No History Yet"
+                    description="Scan results will appear here automatically"
+                  />
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {(Object.entries(groupedReports) as [string, SavedReport[]][]).map(([domain, reports]) => {
+                  {(
+                    Object.entries(groupedReports) as [string, SavedReport[]][]
+                  ).map(([domain, reports]) => {
                     const isExpanded = expandedDomains.has(domain);
                     return (
                       <div key={domain} className="space-y-2">
@@ -699,9 +689,13 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({
                           <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                             {domain}
                           </span>
-                          <span className="text-xs text-slate-400 ml-auto bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">
+                          <Badge
+                            variant="default"
+                            size="xs"
+                            className="ml-auto"
+                          >
                             {reports.length}
-                          </span>
+                          </Badge>
                         </button>
 
                         {isExpanded && (
@@ -730,13 +724,15 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({
             {/* Footer */}
             {history.length > 0 && (
               <div className="px-4 py-3 border-t border-slate-200 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-800/20">
-                <button
+                <Button
                   onClick={() => setShowClearConfirm(true)}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2 text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                  variant="ghost"
+                  size="sm"
+                  icon={<Trash2 size={14} />}
+                  className="w-full justify-center text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
                 >
-                  <Trash2 size={14} />
                   Clear All History
-                </button>
+                </Button>
               </div>
             )}
           </>
@@ -744,4 +740,6 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({
       </div>
     </>
   );
+
+  return createPortal(panel, document.body);
 };

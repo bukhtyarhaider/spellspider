@@ -1,13 +1,83 @@
 import React from "react";
-import { Bug, Sparkles, Github, ExternalLink } from "lucide-react";
+import {
+  Bug,
+  Sparkles,
+  Github,
+  ExternalLink,
+  History as HistoryIcon,
+} from "lucide-react";
 import { APP_CONFIG } from "../constants";
 import { ThemeToggle } from "./ui/ThemeToggle";
+import { HistoryPanel } from "../features/history/HistoryPanel";
+import { useHistory } from "../hooks/useHistory";
+import { SavedReport } from "../types";
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
+  const {
+    history,
+    showHistory,
+    setShowHistory,
+    selectedHistoryItem,
+    viewHistoryItem,
+    closeHistoryItemView,
+    deleteFromHistory,
+    clearHistory,
+    addToHistory,
+  } = useHistory();
+
+  const handleLoadReport = (report: SavedReport) => {
+    // Emit a global event so other parts of the app can respond and load the report
+    window.dispatchEvent(
+      new CustomEvent("spellspider:load-report", { detail: report })
+    );
+    setShowHistory(false);
+  };
+
+  const handleImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const parsed = JSON.parse(String(reader.result));
+        if (Array.isArray(parsed)) {
+          parsed.forEach((r) => addToHistory(r as SavedReport));
+        } else if (parsed && typeof parsed === "object") {
+          addToHistory(parsed as SavedReport);
+        }
+      } catch (err) {
+        // swallow - optional: show toast
+        console.error("Failed to import history file", err);
+      }
+    };
+    reader.readAsText(file);
+    // clear the input value so same file can be re-imported if needed
+    e.currentTarget.value = "";
+  };
+
+  const handleExportHistory = () => {
+    try {
+      const blob = new Blob([JSON.stringify(history, null, 2)], {
+        type: "application/json",
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${APP_CONFIG.name}-history-${new Date()
+        .toISOString()
+        .slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Failed to export history", err);
+    }
+  };
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-50 transition-colors duration-500 font-sans selection:bg-indigo-500/30 selection:text-indigo-900 dark:selection:text-indigo-200">
       {/* Premium Glass Header */}
@@ -31,6 +101,13 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           </div>
 
           <div className="flex items-center gap-4">
+            <button
+              onClick={() => setShowHistory(true)}
+              title="History"
+              className="p-2 rounded-md text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            >
+              <HistoryIcon size={18} />
+            </button>
             <ThemeToggle />
             <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 hidden sm:block" />
             <a
@@ -90,6 +167,20 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           </div>
         </div>
       </footer>
+      {/* Top-level History Panel (overlays header/footer) */}
+      <HistoryPanel
+        isOpen={showHistory}
+        onClose={() => setShowHistory(false)}
+        history={history}
+        onLoadReport={handleLoadReport}
+        onDeleteReport={deleteFromHistory}
+        onClearHistory={clearHistory}
+        selectedItem={selectedHistoryItem}
+        onViewItem={viewHistoryItem}
+        onCloseItemView={closeHistoryItemView}
+        onImportFile={handleImportFile}
+        onExportHistory={handleExportHistory}
+      />
     </div>
   );
 };

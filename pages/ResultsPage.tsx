@@ -3,7 +3,14 @@ import { PageScanResult, SavedReport } from "../types";
 import { ScanProgress } from "../components/ScanProgress";
 import { ErrorCard } from "../components/ErrorCard";
 import { ChecklistPanel } from "../components/ChecklistPanel";
-import { Button, Card, Select } from "../components/ui";
+import {
+  Button,
+  Card,
+  Select,
+  Spinner,
+  EmptyState,
+  Badge,
+} from "../components/ui";
 import {
   StopCircle,
   FileDown,
@@ -514,47 +521,31 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
 
               <div className="p-6 bg-slate-50/50 dark:bg-slate-900/30 flex-1 overflow-y-auto">
                 {selectedResult.status === "pending" ? (
-                  <div className="flex flex-col items-center justify-center h-full py-20 text-slate-400 dark:text-slate-500">
-                    <Square
-                      size={40}
-                      className="mb-4 text-slate-300 dark:text-slate-600"
-                    />
-                    <p>Waiting in queue...</p>
-                  </div>
+                  <EmptyState
+                    icon={Square}
+                    title="Waiting in queue..."
+                    description="This page will be analyzed shortly"
+                  />
                 ) : selectedResult.status === "processing" ? (
-                  <div className="flex flex-col items-center justify-center h-full py-20 text-slate-400 dark:text-slate-500">
-                    <Loader2
-                      size={40}
-                      className="animate-spin mb-4 text-indigo-400"
+                  <div className="flex items-center justify-center h-full">
+                    <Spinner
+                      size="lg"
+                      label="Analyzing content with Gemini AI..."
+                      variant="primary"
                     />
-                    <p>Analyzing content with Gemini AI...</p>
-                    <p className="text-sm mt-2">
-                      Checking grammar, tone, clarity...
-                    </p>
                   </div>
                 ) : selectedResult.status === "failed" ? (
-                  <div className="flex flex-col items-center justify-center h-full py-20 text-slate-400 dark:text-slate-500">
-                    <AlertTriangle size={40} className="mb-4 text-red-400" />
-                    <p className="text-center max-w-md font-medium text-slate-700 dark:text-slate-300 mb-2">
-                      Could not access this page.
-                    </p>
-                    <p className="text-center text-sm max-w-sm mb-4">
-                      The website likely has security blocks against automated
-                      scanners.
-                    </p>
-                  </div>
+                  <EmptyState
+                    icon={AlertTriangle}
+                    title="Could not access this page"
+                    description="The website likely has security blocks against automated scanners."
+                  />
                 ) : selectedResult.errors.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center h-full py-20 text-slate-400 dark:text-slate-500">
-                    <div className="w-16 h-16 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center mb-4 text-green-500 dark:text-green-400">
-                      <CheckCircle size={32} />
-                    </div>
-                    <p className="text-lg font-medium text-slate-700 dark:text-slate-200">
-                      Perfect Score!
-                    </p>
-                    <p className="text-sm">
-                      No grammar, style, or clarity issues found.
-                    </p>
-                  </div>
+                  <EmptyState
+                    icon={CheckCircle}
+                    title="Perfect Score!"
+                    description="No grammar, style, or clarity issues found."
+                  />
                 ) : (
                   <div className="grid gap-4">
                     {filteredErrors.length > 0 ? (
@@ -569,28 +560,32 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
                         />
                       ))
                     ) : (
-                      <div className="text-center py-10 text-slate-400 dark:text-slate-500">
-                        <p>No errors match the selected filters.</p>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={resetFilters}
-                          className="mt-2"
-                        >
-                          Clear Filters
-                        </Button>
-                      </div>
+                      <EmptyState
+                        icon={Filter}
+                        title="No errors match filters"
+                        description="Try adjusting your filter criteria"
+                        action={
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={resetFilters}
+                          >
+                            Clear Filters
+                          </Button>
+                        }
+                      />
                     )}
                   </div>
                 )}
               </div>
             </Card>
           ) : (
-            <Card className="h-full flex items-center justify-center text-slate-400 dark:text-slate-500 p-8">
-              <div className="text-center">
-                <FileSearch size={48} className="mx-auto mb-3 opacity-20" />
-                <p>Select a page from the queue to view details.</p>
-              </div>
+            <Card className="h-full flex items-center justify-center p-8">
+              <EmptyState
+                icon={FileSearch}
+                title="No page selected"
+                description="Select a page from the list to view details"
+              />
             </Card>
           )}
         </div>

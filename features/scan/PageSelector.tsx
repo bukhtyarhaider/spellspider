@@ -10,7 +10,7 @@ import {
   Layers,
   Sparkles,
 } from "lucide-react";
-import { Card, Button } from "../../components/ui";
+import { Card, Button, Badge, EmptyState } from "../../components/ui";
 
 interface PageSelectorProps {
   pages: string[];
@@ -82,13 +82,19 @@ export const PageSelector: React.FC<PageSelectorProps> = ({
                   className="text-indigo-600 dark:text-indigo-400"
                 />
               </div>
-              <div>
-                <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                  Select Pages to Audit
-                </h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400">
-                  {pages.length} page{pages.length !== 1 ? "s" : ""} discovered
-                </p>
+              <div className="flex items-center gap-3">
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+                    Select Pages to Audit
+                  </h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                    {pages.length} page{pages.length !== 1 ? "s" : ""}{" "}
+                    discovered
+                  </p>
+                </div>
+                <Badge variant="primary" size="lg">
+                  {pages.length}
+                </Badge>
               </div>
             </div>
             <button

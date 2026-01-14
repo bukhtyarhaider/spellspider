@@ -1,7 +1,7 @@
 import React from "react";
 import { Loader2, FileSearch, AlertTriangle } from "lucide-react";
 import { PageScanResult } from "../types";
-import { Card } from "./ui";
+import { Card, Badge, Spinner } from "./ui";
 
 interface ScanProgressProps {
   results: PageScanResult[];
@@ -41,7 +41,7 @@ export const ScanProgress: React.FC<ScanProgressProps> = ({
             / {results.length}
           </span>
           {isScanning && (
-            <Loader2 className="animate-spin text-indigo-500 self-center ml-1" size={18} />
+            <Spinner size="sm" variant="primary" className="self-center ml-1" />
           )}
         </div>
       </Card>
@@ -52,7 +52,9 @@ export const ScanProgress: React.FC<ScanProgressProps> = ({
         </div>
         <div
           className={`text-3xl font-bold ${
-            totalErrors > 0 ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"
+            totalErrors > 0
+              ? "text-red-600 dark:text-red-400"
+              : "text-green-600 dark:text-green-400"
           }`}
         >
           {totalErrors}
@@ -74,17 +76,23 @@ export const ScanProgress: React.FC<ScanProgressProps> = ({
         >
           {avgScore || "--"}
           {avgScore > 0 && (
-            <span className="text-lg text-slate-400 dark:text-slate-500 font-normal">/100</span>
+            <span className="text-lg text-slate-400 dark:text-slate-500 font-normal">
+              /100
+            </span>
           )}
         </div>
       </Card>
 
       <Card padding="lg">
-        <div className="text-slate-500 dark:text-slate-400 text-sm font-medium mb-2">Status</div>
+        <div className="text-slate-500 dark:text-slate-400 text-sm font-medium mb-2">
+          Status
+        </div>
         <div className="flex items-center gap-2">
           <div
             className={`w-2.5 h-2.5 rounded-full ${
-              isScanning ? "bg-green-500 animate-pulse" : "bg-slate-300 dark:bg-slate-600"
+              isScanning
+                ? "bg-green-500 animate-pulse"
+                : "bg-slate-300 dark:bg-slate-600"
             }`}
           ></div>
           <span
