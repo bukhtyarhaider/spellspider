@@ -86,8 +86,12 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           <div className="flex items-center gap-3 group cursor-pointer">
             <div className="relative">
               <div className="absolute inset-0 bg-indigo-500 blur-lg opacity-20 group-hover:opacity-40 transition-opacity duration-300 rounded-full" />
-              <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-violet-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/20 transform group-hover:scale-105 transition-all duration-300 ring-1 ring-white/20">
-                <Bug size={20} className="stroke-[2.5px]" />
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg transform group-hover:scale-105 transition-all duration-300 ring-1 ring-white/20 overflow-hidden bg-black">
+                <img
+                  src="/sellspider-logo.png"
+                  alt={`${APP_CONFIG.name} logo`}
+                  className="w-8 h-8 object-contain"
+                />
               </div>
             </div>
             <div className="flex flex-col">
