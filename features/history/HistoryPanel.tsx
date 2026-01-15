@@ -88,26 +88,20 @@ const ConfirmationModal: React.FC<{
             {message}
           </p>
         </div>
-        <div className="flex border-t border-slate-200 dark:border-slate-700">
-          <button
-            onClick={onClose}
-            className="flex-1 px-4 py-3.5 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
-          >
+        <div className="flex gap-3 p-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+          <Button variant="ghost" onClick={onClose} className="flex-1">
             {cancelText}
-          </button>
-          <button
+          </Button>
+          <Button
+            variant={variant === "danger" ? "danger" : "secondary"}
             onClick={() => {
               onConfirm();
               onClose();
             }}
-            className={`flex-1 px-4 py-3.5 text-sm font-medium transition-colors border-l border-slate-200 dark:border-slate-700 ${
-              variant === "danger"
-                ? "text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30"
-                : "text-amber-600 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-900/30"
-            }`}
+            className="flex-1"
           >
             {confirmText}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -617,13 +611,14 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({
                 </div>
               </div>
               <div className="flex items-center gap-1">
-                <button
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => fileInputRef.current?.click()}
-                  className="p-2 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-colors"
+                  icon={<Upload size={18} />}
                   title="Import JSON"
-                >
-                  <Upload size={18} />
-                </button>
+                  className="text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400"
+                />
                 <input
                   type="file"
                   ref={fileInputRef}
@@ -632,20 +627,22 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({
                   accept=".json"
                 />
                 {history.length > 0 && (
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     onClick={onExportHistory}
-                    className="p-2 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-colors"
+                    icon={<Download size={18} />}
                     title="Export All History"
-                  >
-                    <Download size={18} />
-                  </button>
+                    className="text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400"
+                  />
                 )}
-                <button
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={onClose}
-                  className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
-                >
-                  <X size={20} />
-                </button>
+                  icon={<X size={20} />}
+                  className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                />
               </div>
             </div>
 

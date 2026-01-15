@@ -39,7 +39,7 @@ export const Select: React.FC<SelectProps> = ({
         <select
           className={`
             appearance-none cursor-pointer
-            rounded-lg border
+            rounded-xl border
             text-slate-700 dark:text-slate-200
             font-medium
             focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 dark:focus:border-indigo-400

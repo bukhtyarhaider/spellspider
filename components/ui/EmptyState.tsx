@@ -5,10 +5,12 @@ interface EmptyStateProps {
   icon?: LucideIcon;
   title: string;
   description?: string;
-  action?: {
-    label: string;
-    onClick: () => void;
-  };
+  action?:
+    | React.ReactNode
+    | {
+        label: string;
+        onClick: () => void;
+      };
   className?: string;
 }
 
@@ -37,12 +39,18 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         </p>
       )}
       {action && (
-        <button
-          onClick={action.onClick}
-          className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors"
-        >
-          {action.label}
-        </button>
+        <>
+          {React.isValidElement(action) ? (
+            action
+          ) : (
+            <button
+              onClick={(action as any).onClick}
+              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {(action as any).label}
+            </button>
+          )}
+        </>
       )}
     </div>
   );

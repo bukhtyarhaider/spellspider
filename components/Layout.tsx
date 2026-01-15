@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { APP_CONFIG } from "../constants";
 import { ThemeToggle } from "./ui/ThemeToggle";
+import { Button } from "./ui";
 import { HistoryPanel } from "../features/history/HistoryPanel";
 import { useHistory } from "../hooks/useHistory";
 import { SavedReport } from "../types";
@@ -105,23 +106,30 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           </div>
 
           <div className="flex items-center gap-4">
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => setShowHistory(true)}
+              icon={<HistoryIcon size={18} />}
               title="History"
-              className="p-2 rounded-md text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-            >
-              <HistoryIcon size={18} />
-            </button>
+              className="px-2 text-slate-600 dark:text-slate-300"
+            />
             <ThemeToggle />
             <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 hidden sm:block" />
             <a
               href="https://github.com/bukhtyarhaider/spellspider"
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden sm:flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/50"
+              className="hidden sm:block"
             >
-              <Github size={18} />
-              <span>GitHub</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                icon={<Github size={18} />}
+                className="text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400"
+              >
+                GitHub
+              </Button>
             </a>
           </div>
         </div>

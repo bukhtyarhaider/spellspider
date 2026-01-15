@@ -101,9 +101,10 @@ export const HomePage: React.FC<HomePageProps> = ({
             bg: "bg-emerald-50 dark:bg-emerald-900/20",
           },
         ].map((feature, idx) => (
-          <div
+          <Card
             key={idx}
-            className="group p-6 rounded-2xl bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 hover:border-indigo-500/30 dark:hover:border-indigo-500/30 transition-all duration-300 hover:shadow-xl hover:shadow-indigo-500/5"
+            className="group hover:border-indigo-500/30 dark:hover:border-indigo-500/30 transition-all duration-300 hover:shadow-xl hover:shadow-indigo-500/5"
+            padding="lg"
           >
             <div className={`w-12 h-12 rounded-xl ${feature.bg} ${feature.color} flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3`}>
               <feature.icon size={24} strokeWidth={2} />
@@ -114,7 +115,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             <p className="text-slate-500 dark:text-slate-400 leading-relaxed text-sm">
               {feature.desc}
             </p>
-          </div>
+          </Card>
         ))}
       </div>
    

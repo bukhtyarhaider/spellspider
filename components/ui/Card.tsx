@@ -19,13 +19,13 @@ const paddingStyles = {
 
 const variantStyles = {
   default:
-    "bg-white/90 dark:bg-slate-900/70 backdrop-blur-xl border border-slate-200/60 dark:border-slate-800/60 shadow-sm",
+    "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm",
   bordered:
-    "bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 shadow-md",
+    "bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 shadow-sm",
   glass:
-    "bg-white/50 dark:bg-slate-900/40 backdrop-blur-2xl border border-white/20 dark:border-slate-700/30 shadow-xl",
+    "bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/20 dark:border-slate-700/30 shadow-lg",
   gradient:
-    "bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg",
+    "bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-800 border border-slate-200 dark:border-slate-700 shadow-md",
 };
 
 export const Card: React.FC<CardProps> = ({
@@ -40,11 +40,11 @@ export const Card: React.FC<CardProps> = ({
     <div
       onClick={onClick}
       className={`
-        rounded-2xl
+        rounded-xl
         ${variantStyles[variant]}
         ${
           hover
-            ? "hover:shadow-xl hover:shadow-indigo-500/10 hover:border-indigo-200/60 dark:hover:border-indigo-500/30 transition-all duration-300 hover:-translate-y-1 cursor-pointer"
+            ? "hover:shadow-lg hover:shadow-indigo-500/10 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all duration-300 hover:-translate-y-1 cursor-pointer"
             : "transition-all duration-200"
         }
         ${paddingStyles[padding]}

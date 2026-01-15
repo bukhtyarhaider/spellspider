@@ -28,13 +28,13 @@ export const Input: React.FC<InputProps> = ({
         )}
         <input
           className={`
-            w-full px-4 py-3 rounded-lg
-            border border-slate-200
-            bg-white text-slate-900
-            placeholder-slate-400
-            focus:ring-2 focus:ring-indigo-500 focus:border-transparent
+            w-full px-4 py-3 rounded-xl
+            border border-slate-200 dark:border-slate-800
+            bg-white dark:bg-slate-900 text-slate-900 dark:text-white
+            placeholder-slate-400 dark:placeholder-slate-500
+            focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 dark:focus:border-indigo-400
             outline-none transition-all
-            disabled:bg-slate-50 disabled:cursor-not-allowed
+            disabled:bg-slate-50 dark:disabled:bg-slate-800 disabled:cursor-not-allowed
             ${icon ? "pl-12" : ""}
             ${error ? "border-red-300 focus:ring-red-500" : ""}
             ${className}
@@ -42,7 +42,7 @@ export const Input: React.FC<InputProps> = ({
           {...props}
         />
       </div>
-      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+      {error && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{error}</p>}
     </div>
   );
 };
@@ -62,19 +62,19 @@ export const TextArea: React.FC<TextAreaProps> = ({
   return (
     <div className="w-full">
       {label && (
-        <label className="block text-sm font-medium text-slate-700 mb-1">
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">
           {label}
         </label>
       )}
       <textarea
         className={`
-          w-full px-4 py-3 rounded-lg
-          border border-slate-200
-          bg-white text-slate-900
-          placeholder-slate-400
-          focus:ring-2 focus:ring-indigo-500 focus:border-transparent
+          w-full px-4 py-3 rounded-xl
+          border border-slate-200 dark:border-slate-800
+          bg-white dark:bg-slate-900 text-slate-900 dark:text-white
+          placeholder-slate-400 dark:placeholder-slate-500
+          focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 dark:focus:border-indigo-400
           outline-none transition-all resize-none
-          disabled:bg-slate-50 disabled:cursor-not-allowed
+          disabled:bg-slate-50 dark:disabled:bg-slate-800 disabled:cursor-not-allowed
           ${error ? "border-red-300 focus:ring-red-500" : ""}
           ${className}
         `}

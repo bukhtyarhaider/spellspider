@@ -6,9 +6,6 @@ import { ResultsPage } from "../pages/ResultsPage";
 import { SavedReport } from "../types";
 import { generatePDFReport } from "../services/pdfService";
 import { useWebsiteScan, useHistory } from "../hooks";
-import { HistoryPanel } from "../features/history/HistoryPanel";
-import { Button } from "../components/ui";
-import { History } from "lucide-react";
 
 export const AppContent: React.FC = () => {
   const navigate = useNavigate();
@@ -22,6 +19,34 @@ export const AppContent: React.FC = () => {
   const results = websiteScan.results;
   const isScanning = websiteScan.isScanning;
   const step = websiteScan.step;
+
+  // Handlers
+  const loadFromHistory = (report: SavedReport) => {
+    websiteScan.setResults(report.results);
+    websiteScan.setUrlInput(report.targetUrl);
+    websiteScan.setStep("finished");
+    setLoadedFromHistory(true);
+    if (report.resolvedErrors) {
+      setResolvedErrors(new Set(report.resolvedErrors));
+    } else {
+      setResolvedErrors(new Set());
+    }
+    navigate("/results");
+  };
+
+  // Listen for history load events from Layout
+  useEffect(() => {
+    const handleLoadEvent = (e: Event) => {
+      const customEvent = e as CustomEvent<SavedReport>;
+      if (customEvent.detail) {
+        loadFromHistory(customEvent.detail);
+      }
+    };
+    window.addEventListener("spellspider:load-report", handleLoadEvent);
+    return () => {
+      window.removeEventListener("spellspider:load-report", handleLoadEvent);
+    };
+  }, [websiteScan, navigate]);
 
   // Navigation effects based on step changes
   useEffect(() => {
@@ -55,6 +80,10 @@ export const AppContent: React.FC = () => {
         totalErrors,
         resolvedErrors: Array.from(resolvedErrors),
       };
+      // We need to use history hook just for adding, or move this logic to context?
+      // Since useHistory uses localStorage directly, we can use it here just for adding.
+      // But wait, useHistory is also used in Layout. 
+      // It's better if simple add works.
       history.addToHistory(newReport);
     }
   }, [
@@ -63,6 +92,7 @@ export const AppContent: React.FC = () => {
     websiteScan.urlInput,
     results.length,
     loadedFromHistory,
+    history // Added dependency
   ]);
 
   // Reset loadedFromHistory when starting a new scan
@@ -73,7 +103,7 @@ export const AppContent: React.FC = () => {
     }
   }, [step]);
 
-  // Handlers
+
   const handleReset = () => {
     websiteScan.handleReset();
     navigate("/");
@@ -122,147 +152,60 @@ export const AppContent: React.FC = () => {
     setResolvedErrors(new Set());
   };
 
-  const loadFromHistory = (report: SavedReport) => {
-    websiteScan.setResults(report.results);
-    websiteScan.setUrlInput(report.targetUrl);
-    websiteScan.setStep("finished");
-    setLoadedFromHistory(true);
-    if (report.resolvedErrors) {
-      setResolvedErrors(new Set(report.resolvedErrors));
-    } else {
-      setResolvedErrors(new Set());
-    }
-    navigate("/results");
-  };
-
-  const handleImportFile = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const json = JSON.parse(e.target?.result as string) as SavedReport;
-        if (json.results && Array.isArray(json.results)) {
-          history.addToHistory(json);
-          loadFromHistory(json);
-          history.setShowHistory(false);
-        } else {
-          alert("Invalid report file format.");
-        }
-      } catch (err) {
-        alert("Failed to parse JSON file.");
-      }
-    };
-    reader.readAsText(file);
-    if (event.target) event.target.value = "";
-  };
-
-  const exportHistory = () => {
-    const exportData = {
-      exportedAt: new Date().toISOString(),
-      reports: history.history,
-    };
-    const blob = new Blob([JSON.stringify(exportData, null, 2)], {
-      type: "application/json",
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `spellspider-history-${
-      new Date().toISOString().split("T")[0]
-    }.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
   return (
-    <>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative">
-        {/* Top Bar Actions */}
-        <div className="flex justify-end mb-4 gap-3">
-          <Button
-            variant="secondary"
-            size="sm"
-            icon={<History size={16} />}
-            onClick={() => history.setShowHistory(true)}
-          >
-            History
-          </Button>
-        </div>
-
-        {/* Routes */}
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <HomePage
-                urlInput={websiteScan.urlInput}
-                onUrlChange={websiteScan.setUrlInput}
-                onDiscover={websiteScan.handleDiscover}
-                onReset={websiteScan.handleReset}
-                step={
-                  step === "input" ||
-                  step === "discovering" ||
-                  step === "selection"
-                    ? step
-                    : "input"
-                }
-                discoveryProgress={websiteScan.discoveryProgress}
-                errorDetails={websiteScan.errorDetails}
-              />
-            }
-          />
-          <Route
-            path="/select"
-            element={
-              <ScanSelectionPage
-                pages={websiteScan.discoveredPages}
-                selectedPages={websiteScan.selectedPages}
-                onTogglePage={websiteScan.togglePageSelection}
-                onToggleAll={websiteScan.toggleSelectAll}
-                onStartAnalysis={websiteScan.startAnalysis}
-              />
-            }
-          />
-          <Route
-            path="/results"
-            element={
-              <ResultsPage
-                results={results}
-                isScanning={isScanning}
-                currentScanningUrl={websiteScan.currentScanningUrl}
-                urlInput={websiteScan.urlInput}
-                onStop={websiteScan.handleStop}
-                onDownloadPDF={downloadReportPDF}
-                onExportJSON={exportReportJson}
-                onReset={handleReset}
-                resolvedErrors={resolvedErrors}
-                onToggleResolvedError={toggleResolvedError}
-                onRetest={handleRetest}
-              />
-            }
-          />
-        </Routes>
-      </div>
-
-      {/* History Panel */}
-      <HistoryPanel
-        isOpen={history.showHistory}
-        onClose={() => history.setShowHistory(false)}
-        history={history.history}
-        onLoadReport={(report) => {
-          loadFromHistory(report);
-          history.setShowHistory(false);
-        }}
-        onDeleteReport={history.deleteFromHistory}
-        onClearHistory={history.clearHistory}
-        selectedItem={history.selectedHistoryItem}
-        onViewItem={history.viewHistoryItem}
-        onCloseItemView={history.closeHistoryItemView}
-        onImportFile={handleImportFile}
-        onExportHistory={exportHistory}
-      />
-    </>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative">
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <HomePage
+              urlInput={websiteScan.urlInput}
+              onUrlChange={websiteScan.setUrlInput}
+              onDiscover={websiteScan.handleDiscover}
+              onReset={websiteScan.handleReset}
+              step={
+                step === "input" ||
+                step === "discovering" ||
+                step === "selection"
+                  ? step
+                  : "input"
+              }
+              discoveryProgress={websiteScan.discoveryProgress}
+              errorDetails={websiteScan.errorDetails}
+            />
+          }
+        />
+        <Route
+          path="/select"
+          element={
+            <ScanSelectionPage
+              pages={websiteScan.discoveredPages}
+              selectedPages={websiteScan.selectedPages}
+              onTogglePage={websiteScan.togglePageSelection}
+              onToggleAll={websiteScan.toggleSelectAll}
+              onStartAnalysis={websiteScan.startAnalysis}
+            />
+          }
+        />
+        <Route
+          path="/results"
+          element={
+            <ResultsPage
+              results={results}
+              isScanning={isScanning}
+              currentScanningUrl={websiteScan.currentScanningUrl}
+              urlInput={websiteScan.urlInput}
+              onStop={websiteScan.handleStop}
+              onDownloadPDF={downloadReportPDF}
+              onExportJSON={exportReportJson}
+              onReset={handleReset}
+              resolvedErrors={resolvedErrors}
+              onToggleResolvedError={toggleResolvedError}
+              onRetest={handleRetest}
+            />
+          }
+        />
+      </Routes>
+    </div>
   );
 };

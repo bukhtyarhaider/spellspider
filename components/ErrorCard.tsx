@@ -51,83 +51,81 @@ export const ErrorCard: React.FC<ErrorCardProps> = ({ error, id, onClick }) => {
     <div
       id={id}
       onClick={onClick}
-      className={`bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm hover:shadow-md hover:border-indigo-200 dark:hover:border-indigo-800 transition-all group ${
-        onClick ? "cursor-pointer active:scale-[0.99]" : ""
+      className={`group bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm hover:shadow-md hover:border-indigo-300 dark:hover:border-indigo-700 transition-all duration-200 ${
+        onClick ? "cursor-pointer" : ""
       }`}
     >
-      <div className="flex justify-between items-center mb-5">
-        <div className="flex items-center gap-2 flex-wrap">
+      <div className="flex justify-between items-start mb-4">
+        <div className="flex items-center gap-2">
           {/* Category Badge */}
           <span
-            className={`text-xs font-semibold px-3 py-1.5 rounded-lg border inline-flex items-center gap-2 ${style.bg} ${style.text} ${style.border}`}
+            className={`text-xs font-bold px-2.5 py-1 rounded-md border inline-flex items-center gap-1.5 ${style.bg} ${style.text} ${style.border}`}
           >
-            <span
-              className={`w-5 h-5 rounded-md flex items-center justify-center ${
-                style.icon || style.bg
-              }`}
-            >
-              <Icon size={12} className="stroke-[2.5px]" />
-            </span>
+            <Icon size={12} strokeWidth={2.5} />
             {error.type}
           </span>
 
           {/* Severity Badge */}
           <span
-            className={`text-[11px] font-semibold px-3 py-1.5 rounded-lg border inline-flex items-center gap-2 ${severityStyle.bg} ${severityStyle.text} ${severityStyle.border}`}
+            className={`text-[10px] font-bold px-2 py-1 rounded-md border inline-flex items-center gap-1.5 uppercase tracking-wider ${severityStyle.bg} ${severityStyle.text} ${severityStyle.border}`}
           >
-            <span
-              className={`w-1.5 h-1.5 rounded-full ${severityStyle.dot} animate-pulse`}
-            />
             {error.severity}
           </span>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <div className="p-4 bg-red-50/70 dark:bg-red-900/10 rounded-lg border border-red-100 dark:border-red-900/30 group-hover:border-red-200 dark:group-hover:border-red-800 transition-colors">
-          <div className="text-xs text-red-500 dark:text-red-400 font-bold mb-2 uppercase tracking-wider">
-            Original
+         {/* Original */}
+        <div className="relative p-4 rounded-lg bg-red-50/50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/20 group-hover:bg-red-50 dark:group-hover:bg-red-900/20 transition-colors">
+          <div className="text-[10px] text-red-400 dark:text-red-400 font-bold mb-1.5 uppercase tracking-wider flex items-center gap-1">
+             <span className="w-1.5 h-1.5 rounded-full bg-red-400"></span> Original
           </div>
-          <div className="font-medium text-red-900 dark:text-red-200 line-through decoration-red-400 decoration-2">
+          <div className="font-medium text-red-900 dark:text-red-200 line-through decoration-red-300/60 dark:decoration-red-700 decoration-2 text-sm leading-relaxed">
             {error.original}
           </div>
         </div>
-        <div className="p-4 bg-green-50/70 dark:bg-green-900/10 rounded-lg border border-green-100 dark:border-green-900/30 group-hover:border-green-200 dark:group-hover:border-green-800 transition-colors relative">
-          <div className="text-xs text-green-600 dark:text-green-400 font-bold mb-2 uppercase tracking-wider flex items-center justify-between">
-            <span>Suggestion</span>
-            <button
+
+        {/* Suggestion */}
+        <div className="relative p-4 rounded-lg bg-emerald-50/50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900/20 group-hover:bg-emerald-50 dark:group-hover:bg-emerald-900/20 transition-colors">
+          <div className="flex justify-between items-start">
+             <div className="text-[10px] text-emerald-500 dark:text-emerald-400 font-bold mb-1.5 uppercase tracking-wider flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Suggestion
+             </div>
+             <button
               onClick={handleCopySuggestion}
-              className="text-green-500 hover:text-green-700 dark:hover:text-green-300 transition-colors p-1"
+              className="text-emerald-500/70 hover:text-emerald-600 dark:hover:text-emerald-300 transition-colors absolute top-2 right-2 p-1.5 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 rounded"
               title="Copy suggestion"
             >
-              {copied ? <Check size={12} /> : <Copy size={12} />}
+              {copied ? <Check size={14} strokeWidth={3} /> : <Copy size={14} />}
             </button>
           </div>
-          <div className="font-medium text-green-900 dark:text-green-200 flex items-start gap-2">
+          
+          <div className="font-semibold text-emerald-900 dark:text-emerald-100 text-sm leading-relaxed flex items-start gap-2 pr-6">
             <span className="flex-grow">{error.suggestion}</span>
-            <CheckCircle2
-              size={16}
-              className="text-green-500 shrink-0 mt-0.5"
-            />
           </div>
         </div>
       </div>
 
-      <div className="text-slate-600 dark:text-slate-300 text-sm bg-slate-50 dark:bg-slate-800/50 p-4 rounded-lg italic border-l-4 border-slate-300 dark:border-slate-600 mb-3">
-        <span className="text-xs text-slate-400 dark:text-slate-500 uppercase font-semibold block mb-1">
-          Context
-        </span>
-        "{error.context}"
-      </div>
-
-      {error.explanation && (
-        <div className="text-sm text-slate-600 dark:text-slate-300 flex gap-2 items-start bg-indigo-50/50 dark:bg-indigo-900/10 p-3 rounded-lg border border-indigo-100 dark:border-indigo-900/30">
-          <span className="font-bold shrink-0 text-indigo-700 dark:text-indigo-300">
-            Why:
+      <div className="space-y-3">
+        {/* Context */}
+        <div className="text-sm bg-slate-50 dark:bg-slate-950/50 px-3 py-2.5 rounded-md border border-slate-100 dark:border-slate-800 text-slate-600 dark:text-slate-400 italic">
+          <span className="not-italic text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase mr-2 select-none">
+            Context
           </span>
-          <span>{error.explanation}</span>
+          "{error.context}"
         </div>
-      )}
+
+        {/* Explanation */}
+        {error.explanation && (
+          <div className="text-sm flex gap-2.5 items-start pl-1">
+            <div className="mt-1 w-1 h-1 rounded-full bg-indigo-500 shrink-0"></div>
+            <span className="text-slate-600 dark:text-slate-300 leading-relaxed">
+               <span className="font-semibold text-slate-700 dark:text-slate-200 mr-1">Why:</span>
+               {error.explanation}
+            </span>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
