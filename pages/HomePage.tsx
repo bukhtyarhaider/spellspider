@@ -1,5 +1,5 @@
 import React from "react";
-import { Sparkles } from "lucide-react";
+import { Sparkles, ScanSearch, Zap, FileText, CheckCircle2, ArrowRight } from "lucide-react";
 import { UrlInput } from "../features/scan/UrlInput";
 import { ErrorMessage } from "../features/scan/ErrorMessage";
 import { Card, Alert, Spinner } from "../components/ui";
@@ -24,26 +24,32 @@ export const HomePage: React.FC<HomePageProps> = ({
   errorDetails,
 }) => {
   return (
-    <div className="max-w-3xl mx-auto mb-16 text-center transition-all duration-700 ease-out">
-      <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-indigo-50 to-violet-50 dark:from-indigo-900/20 dark:to-violet-900/20 border border-indigo-100 dark:border-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-xs font-bold uppercase tracking-wider mb-8 animate-fade-in shadow-sm hover:shadow-md transition-shadow">
-        <Sparkles size={14} className="animate-pulse" />
-        AI-Powered Content Audit
+    <div className="max-w-4xl mx-auto mb-20 text-center transition-all duration-700 ease-out">
+      {/* Decorative background elements */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-indigo-500/10 dark:bg-indigo-500/5 blur-[120px] rounded-full pointer-events-none -z-10" />
+      
+      <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border border-indigo-100 dark:border-indigo-500/30 text-indigo-600 dark:text-indigo-400 text-xs font-semibold uppercase tracking-wider mb-8 shadow-sm hover:shadow-md transition-all duration-300 ring-1 ring-indigo-500/10">
+        <Sparkles size={14} className="animate-pulse text-indigo-500" />
+        <span>AI-Powered Content Audit</span>
       </div>
 
-      <h2 className="text-5xl sm:text-7xl font-bold text-slate-900 dark:text-white mb-6 tracking-tight animate-slide-up leading-tight">
-        Refine Your <br />
-        <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-600 dark:from-indigo-400 dark:via-violet-400 dark:to-purple-400 animate-gradient-x bg-[length:200%_auto]">
-          Digital Presence
+      <h2 className="text-6xl sm:text-7xl font-bold text-slate-900 dark:text-white mb-6 tracking-tight leading-[1.1]">
+        Perfect Your <br />
+        <span className="relative inline-block">
+          <span className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-violet-500 blur opacity-30 dark:opacity-50" />
+          <span className="relative bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-600 dark:from-indigo-400 dark:via-violet-400 dark:to-purple-400">
+            Digital Presence
+          </span>
         </span>
       </h2>
 
-      <p className="text-xl text-slate-600 dark:text-slate-300 mb-10 max-w-2xl mx-auto leading-relaxed animate-slide-up [animation-delay:100ms]">
-        Instant, professional analysis of spelling, grammar, tone, and style for
-        your website. Powered by Gemini AI.
+      <p className="text-xl text-slate-600 dark:text-slate-300 mb-12 max-w-2xl mx-auto leading-relaxed">
+        Instant, professional analysis of spelling, grammar, tone, and style.
+        <br className="hidden sm:block" /> Powered by advanced Gemini AI.
       </p>
 
-      <div className="flex flex-col gap-6 animate-slide-up [animation-delay:200ms]">
-        <div className="transform hover:scale-[1.01] transition-transform duration-300">
+      <div className="flex flex-col gap-8 max-w-2xl mx-auto mb-20 relative z-10">
+        <div className="transform transition-all duration-300 hover:scale-[1.01]">
           <UrlInput
             urlInput={urlInput}
             onUrlChange={onUrlChange}
@@ -54,12 +60,14 @@ export const HomePage: React.FC<HomePageProps> = ({
         </div>
 
         {discoveryProgress && step === "discovering" && (
-          <Alert variant="info" className="animate-pulse">
-            <div className="flex items-center gap-3">
-              <Spinner size="sm" variant="primary" />
-              <div className="text-left">
-                <p className="font-semibold">Discovering pages...</p>
-                <p className="text-xs mt-1 opacity-90">{discoveryProgress}</p>
+          <Alert variant="info" className="animate-in fade-in slide-in-from-bottom-2 duration-300 border-indigo-100 dark:border-indigo-900/50 bg-indigo-50/50 dark:bg-indigo-900/20">
+            <div className="flex items-center gap-4">
+              <div className="p-2 bg-indigo-100 dark:bg-indigo-900/50 rounded-full">
+                <Spinner size="sm" variant="primary" />
+              </div>
+              <div className="text-left flex-1">
+                <p className="font-semibold text-slate-900 dark:text-slate-100">Scanning Site Structure...</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{discoveryProgress}</p>
               </div>
             </div>
           </Alert>
@@ -69,41 +77,47 @@ export const HomePage: React.FC<HomePageProps> = ({
       </div>
 
       {/* Feature highlights */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-16 text-left">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
         {[
           {
-            icon: "🎯",
+            icon: ScanSearch,
             title: "Precise Analysis",
-            desc: "AI-powered detection of grammar, spelling, and style issues",
+            desc: "Deep scan for grammar, spelling, and subtle tone inconsistencies.",
+            color: "text-blue-500",
+            bg: "bg-blue-50 dark:bg-blue-900/20",
           },
           {
-            icon: "⚡",
+            icon: Zap,
             title: "Lightning Fast",
-            desc: "Scan multiple pages in seconds with concurrent processing",
+            desc: "Concurrent processing engine scans multiple pages in seconds.",
+            color: "text-amber-500",
+            bg: "bg-amber-50 dark:bg-amber-900/20",
           },
           {
-            icon: "📊",
+            icon: FileText,
             title: "Detailed Reports",
-            desc: "Export professional PDF reports with insights and fixes",
+            desc: "Export comprehensive PDF reports with actionable insights.",
+            color: "text-emerald-500",
+            bg: "bg-emerald-50 dark:bg-emerald-900/20",
           },
         ].map((feature, idx) => (
-          <Card
+          <div
             key={idx}
-            variant="glass"
-            hover
-            className="p-5 animate-slide-up"
-            style={{ animationDelay: `${300 + idx * 100}ms` } as any}
+            className="group p-6 rounded-2xl bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 hover:border-indigo-500/30 dark:hover:border-indigo-500/30 transition-all duration-300 hover:shadow-xl hover:shadow-indigo-500/5"
           >
-            <div className="text-3xl mb-3">{feature.icon}</div>
-            <h3 className="font-bold text-slate-900 dark:text-white mb-2">
+            <div className={`w-12 h-12 rounded-xl ${feature.bg} ${feature.color} flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3`}>
+              <feature.icon size={24} strokeWidth={2} />
+            </div>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
               {feature.title}
             </h3>
-            <p className="text-sm text-slate-600 dark:text-slate-400">
+            <p className="text-slate-500 dark:text-slate-400 leading-relaxed text-sm">
               {feature.desc}
             </p>
-          </Card>
+          </div>
         ))}
       </div>
+   
     </div>
   );
 };
